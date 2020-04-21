@@ -1,0 +1,24 @@
+{
+  "name": "mp-progress",
+  "version": "1.0.0",
+  "description": "circle progress for wechat miniprogram",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucaszhu2zgf/mp-progress.git"
+  },
+  "keywords": [
+    "progress",
+    "wechat",
+    "miniprogram"
+  ],
+  "author": "lucaszhu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lucaszhu2zgf/mp-progress/issues"
+  },
+  "homepage": "https://github.com/lucaszhu2zgf/mp-progress#readme"
+}
