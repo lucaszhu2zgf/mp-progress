@@ -8,7 +8,7 @@
  */
 class MpProgress{
   constructor(options){
-    const {canvasId, canvasSize = {width: 0, height: 0}, backgroundBar, foregroundBar, needDot = false, dotStyle = []} = options;
+    const {canvasId, canvasSize = {width: 0, height: 0}, barStyle = {}, needDot = false, dotStyle = []} = options;
     if (canvasId) {
       this._context = wx.createContext();
       this._options = {
@@ -16,8 +16,7 @@ class MpProgress{
         needDot,
         dotStyle,
         canvasSize,
-        backgroundBar,
-        foregroundBar
+        barStyle
       };
     }else{
       throw '[初始化失败]: 缺少canvasId';
@@ -32,23 +31,6 @@ class MpProgress{
     try {
       // 需要旋转的角度
       const deg = ((this._options.percentage/100).toFixed(2))*2*Math.PI;
-      // 圆圈半径
-      let _r = Math.round(this._options.canvasSize.width/2 - this._options.backgroundBar.width) - 6;
-
-      if (this._options.needDot) {
-        if (this._options.dotStyle.length > 0) {
-          const circleR = this._options.dotStyle[0].r;
-          const barWidth = this._options.backgroundBar.width
-          if (circleR > barWidth) {
-            // 4-阴影大小
-            _r -= circleR - barWidth + 4;
-          }
-        }else{
-          console.warn('参数dotStyle不完整，请检查');
-          return;
-        }
-      }
-      this._r = this.convertLength(_r);
 
       // 更换原点
       const originX = Math.round(this._options.canvasSize.width/2);
@@ -57,31 +39,51 @@ class MpProgress{
       // arc原点默认为3点钟方向，需要调整到12点
       this._context.rotate(-90 * Math.PI / 180);
 
-      const isForegroundBarConfig = typeof this._options.foregroundBar !== 'undefined' ? true : false;
-
-      // 画第一层
-      this._context.beginPath();
-      this._context.arc(0, 0, this._r, 0, isForegroundBarConfig ? 2*Math.PI : deg);
-      this._context.setLineWidth(this._options.backgroundBar.width);
-      this._context.setStrokeStyle(this.generateBarFillStyle(this._options.backgroundBar.fillStyle));
-      const backgroundBarLineCap = this._options.backgroundBar.lineCap;
-      if (backgroundBarLineCap) {
-        this._context.setLineCap(backgroundBarLineCap);
-      }
-      this._context.stroke();
-
-      // 画第二层
-      if (isForegroundBarConfig) {
-        this._context.beginPath();
-        this._context.arc(0, 0, this._r, 0, deg);
-        this._context.setLineWidth(this._options.foregroundBar.width);
-        const foregroundBarLineCap = this._options.foregroundBar.lineCap;
-        if (foregroundBarLineCap) {
-          this._context.setLineCap(foregroundBarLineCap);
+      const {barStyle} = this._options;
+      if (barStyle.length > 0) {
+        // 找到最大宽度的bar
+        let maxBarWidth = 0;
+        for (let j = 0; j < barStyle.length; j++) {
+          const _width = barStyle[j].width;
+          if (_width > maxBarWidth) {
+            maxBarWidth = _width;
+          }
         }
-        // this._context.setLineCap('round');
-        this._context.setStrokeStyle(this.generateBarFillStyle(this._options.foregroundBar.fillStyle));
-        this._context.stroke();
+        // 计算圆圈半径
+        let _r = Math.round(this._options.canvasSize.width/2 - maxBarWidth) - 6;
+        if (this._options.needDot) {
+          // 考虑剔除进度点的宽度差
+          if (this._options.dotStyle.length > 0) {
+            const circleR = this._options.dotStyle[0].r;
+            if (circleR > maxBarWidth) {
+              // 4-阴影大小
+              _r -= circleR - barWidth + 4;
+            }
+          }else{
+            console.warn('参数dotStyle不完整，请检查');
+            return;
+          }
+        }
+        this._r = this.convertLength(_r);
+        console.log(this._r);
+
+        for (let i = 0, len = barStyle.length; i < barStyle.length; i++) {
+          ((i)=>{
+            const bar = barStyle[i];
+            this._context.beginPath();
+            this._context.arc(0, 0, this._r, 0, i === len - 1 ? deg : 2*Math.PI);
+            this._context.setLineWidth(bar.width);
+            this._context.setStrokeStyle(this.generateBarFillStyle(bar.fillStyle));
+            const barLineCap = bar.lineCap;
+            if (barLineCap) {
+              this._context.setLineCap(barLineCap);
+            }
+            this._context.stroke();
+          })(i);
+        }
+      } else {
+        console.warn('参数barStyle不符合要求，请检查');
+        return;
       }
 
       if (this._options.needDot) {
