@@ -57,7 +57,7 @@ class MpProgress{
             const circleR = this._options.dotStyle[0].r;
             if (circleR > maxBarWidth) {
               // 4-阴影大小
-              _r -= circleR - barWidth + 4;
+              _r -= circleR - maxBarWidth + 4;
             }
           }else{
             console.warn('参数dotStyle不完整，请检查');
