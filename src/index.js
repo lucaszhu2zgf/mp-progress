@@ -8,9 +8,11 @@
  */
 class MpProgress{
   constructor(options){
-    const {canvasId, canvasSize = {width: 0, height: 0}, barStyle = {}, needDot = false, dotStyle = []} = options;
+    const {canvasId, canvasSize = {width: 0, height: 0}, percent = 100, barStyle = {}, needDot = false, dotStyle = []} = options;
     if (canvasId) {
       this._context = wx.createContext();
+      // 定义展示圆环的百分比，百分比不少于50%
+      this._percent = percent < 50 ? 50 : (percent > 100 ? 100 : percent);
       this._options = {
         canvasId,
         needDot,
@@ -27,18 +29,16 @@ class MpProgress{
       console.warn('[绘图过程出现错误]: 调用draw方法必须传入百分比参数');
       return;
     }
+    if (percentage < 0) {
+      percentage = 0;
+      console.warn('[参数percentagegit<0]: 已自动调整为0');
+    }
+    if (percentage > 100) {
+      percentage = 100;
+      console.warn('[参数percentage>100]: 已自动调整为100');
+    }
     this._options.percentage = +percentage || 0;
     try {
-      // 需要旋转的角度
-      const deg = ((this._options.percentage/100).toFixed(2))*2*Math.PI;
-
-      // 更换原点
-      const originX = Math.round(this._options.canvasSize.width/2);
-      const originY = Math.round(this._options.canvasSize.height/2);
-      this._context.translate(this.convertLength(originX), this.convertLength(originY));
-      // arc原点默认为3点钟方向，需要调整到12点
-      this._context.rotate(-90 * Math.PI / 180);
-
       const {barStyle} = this._options;
       if (barStyle.length > 0) {
         // 找到最大宽度的bar
@@ -49,30 +49,58 @@ class MpProgress{
             maxBarWidth = _width;
           }
         }
-        // 计算圆圈半径
-        let _r = Math.round(this._options.canvasSize.width/2 - maxBarWidth) - 6;
+        // 取canvas的height计算圆圈半径取
+        let _r = 0;
+        const cosP = Math.cos(2*Math.PI/360*((100 - this._percent)/2/100*360));
+        if (this._percent === 100) {
+          _r = ((Math.min(this._options.canvasSize.width, this._options.canvasSize.height) - 2*maxBarWidth)/2).toFixed(2);
+        } else {
+          _r = (Math.min(this._options.canvasSize.width/2, (this._options.canvasSize.height - 2*maxBarWidth)/(1+cosP)) - maxBarWidth).toFixed(2);
+        }
+
+        // 更换原点
+        const originX = Math.round(this._options.canvasSize.width/2);
+        let originY = 0;
+        if (this._percent === 100) {
+          originY = Math.round(this._options.canvasSize.height/2);
+        } else {
+          originY = Math.round(this._options.canvasSize.height/(1 + cosP));
+        }
+
         if (this._options.needDot) {
-          // 考虑剔除进度点的宽度差
+          // 考虑剔除进度点的宽度差以及进度点阴影的宽度查
           if (this._options.dotStyle.length > 0) {
             const circleR = this._options.dotStyle[0].r;
             if (circleR > maxBarWidth) {
-              // 4-阴影大小
-              _r -= circleR - maxBarWidth + 4;
+              const diff = circleR - maxBarWidth + (this._options.dotStyle[0].shadow ? circleR/2 : 0);
+              _r -= diff;
+              if (this._percent !== 100) {
+                originY -= diff;
+              }
             }
           }else{
             console.warn('参数dotStyle不完整，请检查');
             return;
           }
         }
-        this._r = this.convertLength(_r);
-        console.log(this._r);
 
+        console.log(originX, originY);
+        this._context.translate(this.convertLength(originX), this.convertLength(originY));
+        // arc原点默认为3点钟方向，需要调整到12点
+        const rotateDeg = this._percent === 100 ? -90 : (((100 - this._percent) + (this._percent - 50)/2)/100).toFixed(2)*360;
+        this._context.rotate(rotateDeg * Math.PI / 180);
+
+        console.log('_r', _r)
+        this._r = this.convertLength(_r);
+
+        // 需要旋转的角度
+        const deg = ((this._options.percentage/100).toFixed(2))*2*Math.PI;
         for (let i = 0, len = barStyle.length; i < barStyle.length; i++) {
           ((i)=>{
             const bar = barStyle[i];
             this._context.beginPath();
-            this._context.arc(0, 0, this._r, 0, i === len - 1 ? deg : 2*Math.PI);
-            this._context.setLineWidth(bar.width);
+            this._context.arc(0, 0, this._r, 0, (i === len - 1 ? deg : 2*Math.PI)*this._percent/100);
+            this._context.setLineWidth(this.convertLength(bar.width));
             this._context.setStrokeStyle(this.generateBarFillStyle(bar.fillStyle));
             const barLineCap = bar.lineCap;
             if (barLineCap) {
@@ -133,8 +161,9 @@ class MpProgress{
     this._context.beginPath();
     this._context.arc(style.x, style.y, this.convertLength(style.r), 0, 2 * Math.PI);
     this._context.setFillStyle(style.fillStyle || '#ffffff');
-    if (style.needShadow) {
-      this._context.setShadow(0, 0, this.convertLength(style.r/2), 'rgba(86,179,127,0.5)');
+
+    if (style.shadow) {
+      this._context.setShadow(0, 0, this.convertLength(style.r/2), style.shadow);
     }
     this._context.fill();
   }
@@ -144,7 +173,7 @@ class MpProgress{
    */
   drawBarCoordinateDot(){
     // 数学夹脚
-    const mathDeg = ((this._options.percentage/100).toFixed(2))*360;
+    const mathDeg = (((this._options.percentage/100)*this._percent/100).toFixed(2))*360;
     // 计算弧度
     let radian = '';
     // 三角函数cos=y/r，sin=x/r，分别得到小点的x、y坐标
@@ -153,29 +182,29 @@ class MpProgress{
     if (mathDeg <= 90) {
       // 求弧度
       radian = 2*Math.PI/360*mathDeg;
-      x = Math.round(Math.cos(radian)*this._r);
-      y = Math.round(Math.sin(radian)*this._r);
+      x = (Math.cos(radian)*this._r).toFixed(2);
+      y = (Math.sin(radian)*this._r).toFixed(2);
     } else if (mathDeg > 90 && mathDeg <= 180) {
       // 求弧度
       radian = 2*Math.PI/360*(180 - mathDeg);
-      x = -Math.round(Math.cos(radian)*this._r);
-      y = Math.round(Math.sin(radian)*this._r);
+      x = -(Math.cos(radian)*this._r).toFixed(2);
+      y = (Math.sin(radian)*this._r).toFixed(2);
     } else if (mathDeg > 180 && mathDeg <= 270) {
       // 求弧度
       radian = 2*Math.PI/360*(mathDeg - 180);
-      x = -Math.round(Math.cos(radian)*this._r);
-      y = -Math.round(Math.sin(radian)*this._r);
+      x = -(Math.cos(radian)*this._r).toFixed(2);
+      y = -(Math.sin(radian)*this._r).toFixed(2);
     } else{
       // 求弧度
       radian = 2*Math.PI/360*(360 - mathDeg);
-      x = Math.round(Math.cos(radian)*this._r);
-      y = -Math.round(Math.sin(radian)*this._r);
+      x = (Math.cos(radian)*this._r).toFixed(2);
+      y = -(Math.sin(radian)*this._r).toFixed(2);
     }
     // console.log(x, y);
 
     if (this._options.dotStyle.length > 0) {
       // 画背景大点
-      this.drawCircleWithFillStyle({x, y, needShadow: true, ...this._options.dotStyle[0]});
+      this.drawCircleWithFillStyle({x, y, ...this._options.dotStyle[0]});
     }else{
       console.warn('参数dotStyle不完整，请检查');
     }
