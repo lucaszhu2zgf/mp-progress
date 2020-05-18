@@ -29,6 +29,14 @@ class MpProgress{
       console.warn('[绘图过程出现错误]: 调用draw方法必须传入百分比参数');
       return;
     }
+    if (percentage < 0) {
+      percentage = 0;
+      console.warn('[参数percentagegit<0]: 已自动调整为0');
+    }
+    if (percentage > 100) {
+      percentage = 100;
+      console.warn('[参数percentage>100]: 已自动调整为100');
+    }
     this._options.percentage = +percentage || 0;
     try {
       const {barStyle} = this._options;
