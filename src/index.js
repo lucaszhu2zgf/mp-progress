@@ -71,7 +71,7 @@ class MpProgress{
             return;
           }
         }
-        console.log(_r)
+        console.log('_r', _r)
         this._r = this.convertLength(_r);
 
         for (let i = 0, len = barStyle.length; i < barStyle.length; i++) {
@@ -161,23 +161,23 @@ class MpProgress{
     if (mathDeg <= 90) {
       // 求弧度
       radian = 2*Math.PI/360*mathDeg;
-      x = Math.round(Math.cos(radian)*this._r);
-      y = Math.round(Math.sin(radian)*this._r);
+      x = (Math.cos(radian)*this._r).toFixed(2);
+      y = (Math.sin(radian)*this._r).toFixed(2);
     } else if (mathDeg > 90 && mathDeg <= 180) {
       // 求弧度
       radian = 2*Math.PI/360*(180 - mathDeg);
-      x = -Math.round(Math.cos(radian)*this._r);
-      y = Math.round(Math.sin(radian)*this._r);
+      x = -(Math.cos(radian)*this._r).toFixed(2);
+      y = (Math.sin(radian)*this._r).toFixed(2);
     } else if (mathDeg > 180 && mathDeg <= 270) {
       // 求弧度
       radian = 2*Math.PI/360*(mathDeg - 180);
-      x = -Math.round(Math.cos(radian)*this._r);
-      y = -Math.round(Math.sin(radian)*this._r);
+      x = -(Math.cos(radian)*this._r).toFixed(2);
+      y = -(Math.sin(radian)*this._r).toFixed(2);
     } else{
       // 求弧度
       radian = 2*Math.PI/360*(360 - mathDeg);
-      x = Math.round(Math.cos(radian)*this._r);
-      y = -Math.round(Math.sin(radian)*this._r);
+      x = (Math.cos(radian)*this._r).toFixed(2);
+      y = -(Math.sin(radian)*this._r).toFixed(2);
     }
     // console.log(x, y);
 
