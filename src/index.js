@@ -50,20 +50,25 @@ class MpProgress{
           }
         }
         // 计算圆圈半径
-        let _r = Math.round(this._options.canvasSize.width/2 - maxBarWidth) - 6;
+        let _r = (this._options.canvasSize.width/2 - maxBarWidth).toFixed(2);
         if (this._options.needDot) {
-          // 考虑剔除进度点的宽度差
+          // 考虑剔除进度点的宽度差以及进度点阴影的宽度查
           if (this._options.dotStyle.length > 0) {
             const circleR = this._options.dotStyle[0].r;
+            const shadow = this._options.dotStyle[0].r;
             if (circleR > maxBarWidth) {
-              // 4-阴影大小
-              _r -= circleR - maxBarWidth + 4;
+              _r -= circleR - maxBarWidth;
+              if (shadow) {
+                // 有阴影
+                _r -= circleR/4;
+              }
             }
           }else{
             console.warn('参数dotStyle不完整，请检查');
             return;
           }
         }
+
         this._r = this.convertLength(_r);
         console.log(this._r);
 
@@ -133,8 +138,9 @@ class MpProgress{
     this._context.beginPath();
     this._context.arc(style.x, style.y, this.convertLength(style.r), 0, 2 * Math.PI);
     this._context.setFillStyle(style.fillStyle || '#ffffff');
-    if (style.needShadow) {
-      this._context.setShadow(0, 0, this.convertLength(style.r/2), 'rgba(86,179,127,0.5)');
+
+    if (style.shadow) {
+      this._context.setShadow(0, 0, this.convertLength(style.r/2), style.shadow);
     }
     this._context.fill();
   }
@@ -175,7 +181,7 @@ class MpProgress{
 
     if (this._options.dotStyle.length > 0) {
       // 画背景大点
-      this.drawCircleWithFillStyle({x, y, needShadow: true, ...this._options.dotStyle[0]});
+      this.drawCircleWithFillStyle({x, y, ...this._options.dotStyle[0]});
     }else{
       console.warn('参数dotStyle不完整，请检查');
     }
