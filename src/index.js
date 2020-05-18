@@ -12,7 +12,7 @@ class MpProgress{
     if (canvasId) {
       this._context = wx.createContext();
       // 定义展示圆环的百分比，百分比不少于50%
-      this._percent = percent < 50 ? 50 : percent;
+      this._percent = percent < 50 ? 50 : (percent > 100 ? 100 : percent);
       this._options = {
         canvasId,
         needDot,
@@ -39,7 +39,7 @@ class MpProgress{
       const originY = Math.round(this._options.canvasSize.height/2);
       this._context.translate(this.convertLength(originX), this.convertLength(originY));
       // arc原点默认为3点钟方向，需要调整到12点
-      const rotateDeg = this._percent === 100 ? -90 : (((100 - this._percent) + (50 - this._percent)/2)/100).toFixed(2)*360;
+      const rotateDeg = this._percent === 100 ? -90 : (((100 - this._percent) + (this._percent - 50)/2)/100).toFixed(2)*360;
       this._context.rotate(rotateDeg * Math.PI / 180);
 
       const {barStyle} = this._options;
@@ -78,7 +78,7 @@ class MpProgress{
           ((i)=>{
             const bar = barStyle[i];
             this._context.beginPath();
-            this._context.arc(0, 0, this._r, 0, i === len - 1 ? deg : 2*Math.PI);
+            this._context.arc(0, 0, this._r, 0, (i === len - 1 ? deg : 2*Math.PI)*this._percent/100);
             this._context.setLineWidth(this.convertLength(bar.width));
             this._context.setStrokeStyle(this.generateBarFillStyle(bar.fillStyle));
             const barLineCap = bar.lineCap;
@@ -152,7 +152,7 @@ class MpProgress{
    */
   drawBarCoordinateDot(){
     // 数学夹脚
-    const mathDeg = ((this._options.percentage/100).toFixed(2))*360;
+    const mathDeg = (((this._options.percentage/100)*this._percent/100).toFixed(2))*360;
     // 计算弧度
     let radian = '';
     // 三角函数cos=y/r，sin=x/r，分别得到小点的x、y坐标

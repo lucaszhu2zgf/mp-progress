@@ -7,6 +7,7 @@ $ npm install mp-progress --save
 ```
 
 ## 用法
+传入的单位是`rpx`
 ```
 import MpProgress from 'mp-progress';
 ...
