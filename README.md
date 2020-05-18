@@ -7,7 +7,7 @@ $ npm install mp-progress --save
 ```
 
 ## 用法
-传入的单位是`rpx`
+传入的单位是`rpx`，即如果canvas宽度为400rpx，则传入400，后续会自动计算真实尺寸
 ```
 import MpProgress from 'mp-progress';
 ...
