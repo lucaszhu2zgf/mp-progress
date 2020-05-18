@@ -55,7 +55,7 @@ class MpProgress{
         if (this._percent === 100) {
           _r = ((Math.min(this._options.canvasSize.width, this._options.canvasSize.height) - 2*maxBarWidth)/2).toFixed(2);
         } else {
-          _r = (Math.min(this._options.canvasSize.width/2, (this._options.canvasSize.height - 2*maxBarWidth)/(1+cosP)) - maxBarWidth).toFixed(2); 
+          _r = (Math.min(this._options.canvasSize.width/2, (this._options.canvasSize.height - 2*maxBarWidth)/(1+cosP)) - maxBarWidth).toFixed(2);
         }
 
         // 更换原点
@@ -72,9 +72,11 @@ class MpProgress{
           if (this._options.dotStyle.length > 0) {
             const circleR = this._options.dotStyle[0].r;
             if (circleR > maxBarWidth) {
-              const diff = circleR - maxBarWidth + (this._options.dotStyle[0].shadow ? circleR : 0);
+              const diff = circleR - maxBarWidth + (this._options.dotStyle[0].shadow ? circleR/2 : 0);
               _r -= diff;
-              originY -= diff;
+              if (this._percent !== 100) {
+                originY -= diff;
+              }
             }
           }else{
             console.warn('参数dotStyle不完整，请检查');
@@ -82,6 +84,7 @@ class MpProgress{
           }
         }
 
+        console.log(originX, originY);
         this._context.translate(this.convertLength(originX), this.convertLength(originY));
         // arc原点默认为3点钟方向，需要调整到12点
         const rotateDeg = this._percent === 100 ? -90 : (((100 - this._percent) + (this._percent - 50)/2)/100).toFixed(2)*360;
