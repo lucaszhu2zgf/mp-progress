@@ -52,8 +52,8 @@ class MpProgress{
             maxBarWidth = _width;
           }
         }
-        // 计算圆圈半径
-        let _r = (this._options.canvasSize.width/2 - maxBarWidth).toFixed(2);
+        // 取canvas的短边计算圆圈半径
+        let _r = (Math.min(this._options.canvasSize.width, this._options.canvasSize.height)/2 - maxBarWidth).toFixed(2);
         if (this._options.needDot) {
           // 考虑剔除进度点的宽度差以及进度点阴影的宽度查
           if (this._options.dotStyle.length > 0) {
