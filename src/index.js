@@ -31,17 +31,6 @@ class MpProgress{
     }
     this._options.percentage = +percentage || 0;
     try {
-      // 需要旋转的角度
-      const deg = ((this._options.percentage/100).toFixed(2))*2*Math.PI;
-
-      // 更换原点
-      const originX = Math.round(this._options.canvasSize.width/2);
-      const originY = Math.round(this._options.canvasSize.height/2);
-      this._context.translate(this.convertLength(originX), this.convertLength(originY));
-      // arc原点默认为3点钟方向，需要调整到12点
-      const rotateDeg = this._percent === 100 ? -90 : (((100 - this._percent) + (this._percent - 50)/2)/100).toFixed(2)*360;
-      this._context.rotate(rotateDeg * Math.PI / 180);
-
       const {barStyle} = this._options;
       if (barStyle.length > 0) {
         // 找到最大宽度的bar
@@ -52,28 +41,49 @@ class MpProgress{
             maxBarWidth = _width;
           }
         }
-        // 取canvas的短边计算圆圈半径
-        let _r = (Math.min(this._options.canvasSize.width, this._options.canvasSize.height)/2 - maxBarWidth).toFixed(2);
+        // 取canvas的height计算圆圈半径取
+        let _r = 0;
+        const cosP = Math.cos(2*Math.PI/360*((100 - this._percent)/2/100*360));
+        if (this._percent === 100) {
+          _r = ((Math.min(this._options.canvasSize.width, this._options.canvasSize.height) - 2*maxBarWidth)/2).toFixed(2);
+        } else {
+          _r = (Math.min(this._options.canvasSize.width/2, (this._options.canvasSize.height - 2*maxBarWidth)/(1+cosP)) - maxBarWidth).toFixed(2); 
+        }
+
+        // 更换原点
+        const originX = Math.round(this._options.canvasSize.width/2);
+        let originY = 0;
+        if (this._percent === 100) {
+          originY = Math.round(this._options.canvasSize.height/2);
+        } else {
+          originY = Math.round(this._options.canvasSize.height/(1 + cosP));
+        }
+
         if (this._options.needDot) {
           // 考虑剔除进度点的宽度差以及进度点阴影的宽度查
           if (this._options.dotStyle.length > 0) {
             const circleR = this._options.dotStyle[0].r;
-            const shadow = this._options.dotStyle[0].r;
             if (circleR > maxBarWidth) {
-              _r -= circleR - maxBarWidth;
-              if (shadow) {
-                // 有阴影
-                _r -= circleR/4;
-              }
+              const diff = circleR - maxBarWidth + (this._options.dotStyle[0].shadow ? circleR : 0);
+              _r -= diff;
+              originY -= diff;
             }
           }else{
             console.warn('参数dotStyle不完整，请检查');
             return;
           }
         }
+
+        this._context.translate(this.convertLength(originX), this.convertLength(originY));
+        // arc原点默认为3点钟方向，需要调整到12点
+        const rotateDeg = this._percent === 100 ? -90 : (((100 - this._percent) + (this._percent - 50)/2)/100).toFixed(2)*360;
+        this._context.rotate(rotateDeg * Math.PI / 180);
+
         console.log('_r', _r)
         this._r = this.convertLength(_r);
 
+        // 需要旋转的角度
+        const deg = ((this._options.percentage/100).toFixed(2))*2*Math.PI;
         for (let i = 0, len = barStyle.length; i < barStyle.length; i++) {
           ((i)=>{
             const bar = barStyle[i];
