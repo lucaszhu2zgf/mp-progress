@@ -9,10 +9,7 @@
 class MyProgress {
     constructor(options) {
         const {
-            id, canvasSize = {
-                width: 0,
-                height: 0
-            }, percent = 100, barStyle = {}, needDot = false, dotStyle = [], context = this
+            id, canvasSize = {width: 0,height: 0}, percent = 100, barStyle = {}, needDot = false, dotStyle = [], context = this
         } = options;
         if (id) {
             this._context = wx.createSelectorQuery().in(context)
@@ -50,6 +47,10 @@ class MyProgress {
                 .exec((res) => {
                     const canvas = res[0].node
                     const ctx = canvas.getContext('2d')
+                    const dpr = wx.getSystemInfoSync().pixelRatio
+                    canvas.width = res[0].width * dpr
+                    canvas.height = res[0].height * dpr
+                    ctx.scale(dpr, dpr)
                     this._options.percentage = +percentage || 0;
                     try {
                         const {
