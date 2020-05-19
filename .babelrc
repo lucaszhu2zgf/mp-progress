@@ -1,13 +1,13 @@
 {
     "presets": [
-      [
-        "@babel/preset-env",
-        {
-          "targets": {
-            "uglify": true
-          },
-          "modules": false
-        }
-      ]
+        [
+            "@babel/preset-env",
+            {
+                "targets": {
+                    "uglify": true
+                },
+                "modules": false
+            }
+        ]
     ]
-  }
+}

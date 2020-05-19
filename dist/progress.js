@@ -223,9 +223,12 @@ var MpProgress = /*#__PURE__*/function () {
                   var circleR = _this._options.dotStyle[0].r;
 
                   if (circleR > maxBarWidth) {
-                    var diff = circleR - maxBarWidth + (_this._options.dotStyle[0].shadow ? circleR : 0);
+                    var diff = circleR - maxBarWidth + (_this._options.dotStyle[0].shadow ? circleR / 2 : 0);
                     _r -= diff;
-                    originY -= diff;
+
+                    if (_this._percent !== 100) {
+                      originY -= diff;
+                    }
                   }
                 } else {
                   console.warn('参数dotStyle不完整，请检查');
@@ -236,6 +239,8 @@ var MpProgress = /*#__PURE__*/function () {
                   };
                 }
               }
+
+              console.log(originX, originY);
 
               _this._context.translate(_this.convertLength(originX), _this.convertLength(originY)); // arc原点默认为3点钟方向，需要调整到12点
 
