@@ -2,3 +2,5 @@ node_modules
 src
 webpack.config.js
 dist/progress.js
+.vscode
+.babelrc
