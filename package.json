@@ -1,38 +1,38 @@
 {
-  "name": "mp-progress",
-  "version": "1.1.0",
-  "description": "circle progress for wechat miniprogram",
-  "main": "dist/progress.min.js",
-  "scripts": {
-    "debug": "webpack",
-    "watch": "webpack --watch",
-    "build": "cross-env NODE_ENV=production webpack",
-    "prepublish": "npm run debug & npm run build"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/lucaszhu2zgf/mp-progress.git"
-  },
-  "keywords": [
-    "progress",
-    "wechat",
-    "miniprogram",
-    "小程序",
-    "进度条"
-  ],
-  "author": "lucaszhu",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/lucaszhu2zgf/mp-progress/issues"
-  },
-  "homepage": "https://github.com/lucaszhu2zgf/mp-progress#readme",
-  "devDependencies": {
-    "@babel/core": "^7.9.6",
-    "@babel/preset-env": "^7.9.6",
-    "babel-loader": "^8.1.0",
-    "cross-env": "^7.0.2",
-    "uglifyjs-webpack-plugin": "^2.2.0",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11"
-  }
+    "name": "mp-progress",
+    "version": "1.1.0",
+    "description": "circle progress for wechat miniprogram",
+    "main": "dist/progress.min.js",
+    "scripts": {
+        "debug": "webpack",
+        "watch": "webpack --watch",
+        "build": "cross-env NODE_ENV=production webpack",
+        "prepublish": "npm run debug & npm run build"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lucaszhu2zgf/mp-progress.git"
+    },
+    "keywords": [
+        "progress",
+        "wechat",
+        "miniprogram",
+        "小程序",
+        "进度条"
+    ],
+    "author": "lucaszhu",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/lucaszhu2zgf/mp-progress/issues"
+    },
+    "homepage": "https://github.com/lucaszhu2zgf/mp-progress#readme",
+    "devDependencies": {
+        "@babel/core": "^7.9.6",
+        "@babel/preset-env": "^7.9.6",
+        "babel-loader": "^8.1.0",
+        "cross-env": "^7.0.2",
+        "uglifyjs-webpack-plugin": "^2.2.0",
+        "webpack": "^4.43.0",
+        "webpack-cli": "^3.3.11"
+    }
 }
