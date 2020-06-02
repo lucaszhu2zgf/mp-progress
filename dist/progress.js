@@ -140,18 +140,20 @@ var MpProgress = /*#__PURE__*/function () {
         _options$needDot = options.needDot,
         needDot = _options$needDot === void 0 ? false : _options$needDot,
         _options$dotStyle = options.dotStyle,
-        dotStyle = _options$dotStyle === void 0 ? [] : _options$dotStyle;
+        dotStyle = _options$dotStyle === void 0 ? [] : _options$dotStyle,
+        _options$target = options.target,
+        target = _options$target === void 0 ? null : _options$target;
 
     if (canvasId) {
-      this._context = wx.createContext(); // 定义展示圆环的百分比，百分比不少于50%
-
+      // 定义展示圆环的百分比，百分比不少于50%
       this._percent = percent < 50 ? 50 : percent > 100 ? 100 : percent;
       this._options = {
         canvasId: canvasId,
         needDot: needDot,
         dotStyle: dotStyle,
         canvasSize: canvasSize,
-        barStyle: barStyle
+        barStyle: barStyle,
+        target: target
       };
     } else {
       throw '[初始化失败]: 缺少canvasId';
@@ -162,6 +164,13 @@ var MpProgress = /*#__PURE__*/function () {
     key: "draw",
     value: function draw(percentage) {
       var _this = this;
+
+      var version = wx.getSystemInfoSync().SDKVersion;
+
+      if (this.compareVersion(version, '2.7.0') < 0) {
+        console.error("\u8BF7\u57282.7.0\u4EE5\u4E0A\u7684SDK\u4E2D\u4F7F\u7528\uFF0C\u5F53\u524DSDK\u7248\u672C\uFF1A".concat(version));
+        return;
+      }
 
       if (typeof percentage === 'undefined') {
         console.warn('[绘图过程出现错误]: 调用draw方法必须传入百分比参数');
@@ -180,9 +189,35 @@ var MpProgress = /*#__PURE__*/function () {
 
       this._options.percentage = +percentage || 0;
 
+      if (this._context) {
+        // context初始化完毕
+        this.drawFn();
+      } else {
+        wx.createSelectorQuery()["in"](this._options.target).select("#".concat(this._options.canvasId)).fields({
+          node: true,
+          size: true
+        }).exec(function (res) {
+          console.log(res);
+          var canvas = res[0].node;
+          var ctx = canvas.getContext('2d');
+          var dpr = wx.getSystemInfoSync().pixelRatio;
+          canvas.width = res[0].width * dpr;
+          canvas.height = res[0].height * dpr;
+          ctx.scale(dpr, dpr);
+          _this._context = ctx;
+
+          _this.drawFn();
+        });
+      }
+    }
+  }, {
+    key: "drawFn",
+    value: function drawFn() {
+      var _this2 = this;
+
       try {
         var _ret = function () {
-          var barStyle = _this._options.barStyle;
+          var barStyle = _this2._options.barStyle;
 
           if (barStyle.length > 0) {
             var _ret2 = function () {
@@ -199,34 +234,34 @@ var MpProgress = /*#__PURE__*/function () {
 
 
               var _r = 0;
-              var cosP = Math.cos(2 * Math.PI / 360 * ((100 - _this._percent) / 2 / 100 * 360));
+              var cosP = Math.cos(2 * Math.PI / 360 * ((100 - _this2._percent) / 2 / 100 * 360));
 
-              if (_this._percent === 100) {
-                _r = ((Math.min(_this._options.canvasSize.width, _this._options.canvasSize.height) - 2 * maxBarWidth) / 2).toFixed(2);
+              if (_this2._percent === 100) {
+                _r = ((Math.min(_this2._options.canvasSize.width, _this2._options.canvasSize.height) - 2 * maxBarWidth) / 2).toFixed(2);
               } else {
-                _r = (Math.min(_this._options.canvasSize.width / 2, (_this._options.canvasSize.height - 2 * maxBarWidth) / (1 + cosP)) - maxBarWidth).toFixed(2);
+                _r = (Math.min(_this2._options.canvasSize.width / 2, (_this2._options.canvasSize.height - 2 * maxBarWidth) / (1 + cosP)) - maxBarWidth).toFixed(2);
               } // 更换原点
 
 
-              var originX = Math.round(_this._options.canvasSize.width / 2);
+              var originX = Math.round(_this2._options.canvasSize.width / 2);
               var originY = 0;
 
-              if (_this._percent === 100) {
-                originY = Math.round(_this._options.canvasSize.height / 2);
+              if (_this2._percent === 100) {
+                originY = Math.round(_this2._options.canvasSize.height / 2);
               } else {
-                originY = Math.round(_this._options.canvasSize.height / (1 + cosP));
+                originY = Math.round(_this2._options.canvasSize.height / (1 + cosP));
               }
 
-              if (_this._options.needDot) {
+              if (_this2._options.needDot) {
                 // 考虑剔除进度点的宽度差以及进度点阴影的宽度查
-                if (_this._options.dotStyle.length > 0) {
-                  var circleR = _this._options.dotStyle[0].r;
+                if (_this2._options.dotStyle.length > 0) {
+                  var circleR = _this2._options.dotStyle[0].r;
 
                   if (circleR > maxBarWidth) {
-                    var diff = circleR - maxBarWidth + (_this._options.dotStyle[0].shadow ? circleR / 2 : 0);
+                    var diff = circleR - maxBarWidth + (_this2._options.dotStyle[0].shadow ? circleR / 2 : 0);
                     _r -= diff;
 
-                    if (_this._percent !== 100) {
+                    if (_this2._percent !== 100) {
                       originY -= diff;
                     }
                   }
@@ -242,37 +277,35 @@ var MpProgress = /*#__PURE__*/function () {
 
               console.log(originX, originY);
 
-              _this._context.translate(_this.convertLength(originX), _this.convertLength(originY)); // arc原点默认为3点钟方向，需要调整到12点
+              _this2._context.translate(_this2.convertLength(originX), _this2.convertLength(originY)); // arc原点默认为3点钟方向，需要调整到12点
 
 
-              var rotateDeg = _this._percent === 100 ? -90 : ((100 - _this._percent + (_this._percent - 50) / 2) / 100).toFixed(2) * 360;
+              var rotateDeg = _this2._percent === 100 ? -90 : ((100 - _this2._percent + (_this2._percent - 50) / 2) / 100).toFixed(2) * 360;
 
-              _this._context.rotate(rotateDeg * Math.PI / 180);
+              _this2._context.rotate(rotateDeg * Math.PI / 180);
 
               console.log('_r', _r);
-              _this._r = _this.convertLength(_r); // 需要旋转的角度
+              _this2._r = _this2.convertLength(_r); // 需要旋转的角度
 
-              var deg = (_this._options.percentage / 100).toFixed(2) * 2 * Math.PI;
+              var deg = (_this2._options.percentage / 100).toFixed(2) * 2 * Math.PI;
 
               var _loop = function _loop(i, len) {
                 (function (i) {
                   var bar = barStyle[i];
 
-                  _this._context.beginPath();
+                  _this2._context.beginPath();
 
-                  _this._context.arc(0, 0, _this._r, 0, (i === len - 1 ? deg : 2 * Math.PI) * _this._percent / 100);
+                  _this2._context.arc(0, 0, _this2._r, 0, (i === len - 1 ? deg : 2 * Math.PI) * _this2._percent / 100);
 
-                  _this._context.setLineWidth(_this.convertLength(bar.width));
-
-                  _this._context.setStrokeStyle(_this.generateBarFillStyle(bar.fillStyle));
-
+                  _this2._context.lineWidth = _this2.convertLength(bar.width);
+                  _this2._context.strokeStyle = _this2.generateBarFillStyle(bar.fillStyle);
                   var barLineCap = bar.lineCap;
 
                   if (barLineCap) {
-                    _this._context.setLineCap(barLineCap);
+                    _this2._context.lineCap = barLineCap;
                   }
 
-                  _this._context.stroke();
+                  _this2._context.stroke();
                 })(i);
               };
 
@@ -289,20 +322,43 @@ var MpProgress = /*#__PURE__*/function () {
             };
           }
 
-          if (_this._options.needDot) {
-            _this.drawBarCoordinateDot();
+          if (_this2._options.needDot) {
+            _this2.drawBarCoordinateDot();
           }
-
-          wx.drawCanvas({
-            canvasId: _this._options.canvasId,
-            actions: _this._context.getActions()
-          });
         }();
 
         if (_typeof(_ret) === "object") return _ret.v;
       } catch (err) {
         console.warn('[绘图过程出现错误]: ', err);
       }
+    }
+  }, {
+    key: "compareVersion",
+    value: function compareVersion(v1, v2) {
+      v1 = v1.split('.');
+      v2 = v2.split('.');
+      var len = Math.max(v1.length, v2.length);
+
+      while (v1.length < len) {
+        v1.push('0');
+      }
+
+      while (v2.length < len) {
+        v2.push('0');
+      }
+
+      for (var i = 0; i < len; i++) {
+        var num1 = parseInt(v1[i]);
+        var num2 = parseInt(v2[i]);
+
+        if (num1 > num2) {
+          return 1;
+        } else if (num1 < num2) {
+          return -1;
+        }
+      }
+
+      return 0;
     }
     /**
      * 计算填充颜色
@@ -352,10 +408,13 @@ var MpProgress = /*#__PURE__*/function () {
 
       this._context.arc(style.x, style.y, this.convertLength(style.r), 0, 2 * Math.PI);
 
-      this._context.setFillStyle(style.fillStyle || '#ffffff');
+      this._context.fillStyle = style.fillStyle || '#ffffff';
 
       if (style.shadow) {
-        this._context.setShadow(0, 0, this.convertLength(style.r / 2), style.shadow);
+        this._context.shadowOffsetX = 0;
+        this._context.shadowOffsetY = 0;
+        this._context.shadowColor = style.shadow;
+        this._context.shadowBlur = this.convertLength(style.r / 2);
       }
 
       this._context.fill();

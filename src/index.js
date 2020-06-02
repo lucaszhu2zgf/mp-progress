@@ -17,10 +17,11 @@ class MpProgress {
             percent = 100,
             barStyle = {},
             needDot = false,
-            dotStyle = []
+            dotStyle = [],
+            target = null
         } = options;
+
         if (canvasId) {
-            this._context = wx.createContext();
             // 定义展示圆环的百分比，百分比不少于50%
             this._percent = percent < 50 ? 50 : (percent > 100 ? 100 : percent);
             this._options = {
@@ -28,13 +29,20 @@ class MpProgress {
                 needDot,
                 dotStyle,
                 canvasSize,
-                barStyle
+                barStyle,
+                target
             };
         } else {
             throw '[初始化失败]: 缺少canvasId';
         }
     }
     draw(percentage) {
+        const version = wx.getSystemInfoSync().SDKVersion
+        if (this.compareVersion(version, '2.7.0') < 0) {
+            console.error(`请在2.7.0以上的SDK中使用，当前SDK版本：${version}`);
+            return;
+        }
+
         if (typeof percentage === 'undefined') {
             console.warn('[绘图过程出现错误]: 调用draw方法必须传入百分比参数');
             return;
@@ -47,7 +55,30 @@ class MpProgress {
             percentage = 100;
             console.warn('[参数percentage>100]: 已自动调整为100');
         }
+
         this._options.percentage = +percentage || 0;
+        if (this._context) {
+            // context初始化完毕
+            this.drawFn();
+        } else {
+            wx.createSelectorQuery().in(this._options.target).select(`#${this._options.canvasId}`).fields({
+                node: true,
+                size: true
+            }).exec((res) => {
+                console.log(res)
+                const canvas = res[0].node;
+                const ctx = canvas.getContext('2d');
+                const dpr = wx.getSystemInfoSync().pixelRatio;
+                canvas.width = res[0].width * dpr;
+                canvas.height = res[0].height * dpr;
+                ctx.scale(dpr, dpr);
+                this._context = ctx;
+
+                this.drawFn();
+            });
+        }
+    }
+    drawFn(){
         try {
             const {
                 barStyle
@@ -112,11 +143,11 @@ class MpProgress {
                         const bar = barStyle[i];
                         this._context.beginPath();
                         this._context.arc(0, 0, this._r, 0, (i === len - 1 ? deg : 2 * Math.PI) * this._percent / 100);
-                        this._context.setLineWidth(this.convertLength(bar.width));
-                        this._context.setStrokeStyle(this.generateBarFillStyle(bar.fillStyle));
+                        this._context.lineWidth = this.convertLength(bar.width);
+                        this._context.strokeStyle = this.generateBarFillStyle(bar.fillStyle);
                         const barLineCap = bar.lineCap;
                         if (barLineCap) {
-                            this._context.setLineCap(barLineCap);
+                            this._context.lineCap = barLineCap;
                         }
                         this._context.stroke();
                     })(i);
@@ -129,14 +160,34 @@ class MpProgress {
             if (this._options.needDot) {
                 this.drawBarCoordinateDot();
             }
-
-            wx.drawCanvas({
-                canvasId: this._options.canvasId,
-                actions: this._context.getActions()
-            });
         } catch (err) {
             console.warn('[绘图过程出现错误]: ', err);
         }
+    }
+    compareVersion(v1, v2) {
+        v1 = v1.split('.');
+        v2 = v2.split('.');
+        const len = Math.max(v1.length, v2.length);
+      
+        while (v1.length < len) {
+          v1.push('0');
+        }
+        while (v2.length < len) {
+          v2.push('0');
+        }
+      
+        for (let i = 0; i < len; i++) {
+          const num1 = parseInt(v1[i]);
+          const num2 = parseInt(v2[i]);
+      
+          if (num1 > num2) {
+            return 1;
+          } else if (num1 < num2) {
+            return -1;
+          }
+        }
+      
+        return 0;
     }
     /**
      * 计算填充颜色
@@ -172,10 +223,13 @@ class MpProgress {
         console.log(style)
         this._context.beginPath();
         this._context.arc(style.x, style.y, this.convertLength(style.r), 0, 2 * Math.PI);
-        this._context.setFillStyle(style.fillStyle || '#ffffff');
+        this._context.fillStyle = style.fillStyle || '#ffffff';
 
         if (style.shadow) {
-            this._context.setShadow(0, 0, this.convertLength(style.r / 2), style.shadow);
+            this._context.shadowOffsetX = 0;
+            this._context.shadowOffsetY = 0;
+            this._context.shadowColor = style.shadow;
+            this._context.shadowBlur = this.convertLength(style.r / 2);
         }
         this._context.fill();
     }

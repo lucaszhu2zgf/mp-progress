@@ -13,6 +13,7 @@ import MpProgress from 'mp-progress';
 ...
 // 初始化
 const mprogress = new MpProgress({
+  target: this,
   canvasId: 'progress',
   canvasSize: {width: 400, height: 400},
   barStyle: [{width: 12, fillStyle: '#f0f0f0'}, {width: 12, fillStyle: [{position: 0, color: '#56B37F'}, {position: 1, color: '#c0e674'}]}]
@@ -22,7 +23,7 @@ const mprogress = new MpProgress({
 mprogress.draw(60);
 
 ...
-<canvas class="canvas" canvas-id="progress"></canvas>
+<canvas class="canvas" type="2d" id="progress"></canvas>
 ```
 ## 显示模式
 |效果|解析|
@@ -34,6 +35,7 @@ mprogress.draw(60);
 
 |参数名|数据类型|解析|必要参数|示列|
 |:----|:-----|:-----|:---:|:-----|
+|target|Object|页面上下文|是|this|
 |canvasId|String|页面canvas的id|是|progress|
 |canvasSize|Object|canvas画布的大小，对应单位是rpx，只需要传入数字即可|是|{width: 200, height: 300}|
 |percent|Number|默认按照360度去计算和显示圆环，如果传入80%则会自动根据canvas尺寸贴底画出最大半圆弧，有效值在50%～100%|否|100|
@@ -51,4 +53,5 @@ mprogress.draw(60);
 |问题描述|解决方案|
 |:----|:-----|
 |如何设置弧线端点样式|可以在`barStyle`中任何一个参数项增加`lineCap`参数，例如：barStyle: [{width: 12, lineCap: 'round', fillStyle: '#56B37F'}]，`lineCap`有效值可以[查看文档](https://developers.weixin.qq.com/miniprogram/dev/api/canvas/CanvasContext.setLineCap.html)|
+|必须在2.7.0版本以上的SDK运行|组件已经采用微信最新的同层渲染方法，该方法要求SDK版本不低于2.7.0|
 |dotStyle|如果包含shadow的话，为了保证shadow在圆环的所有都可以完整展示，会自动缩减进度条的半径|
