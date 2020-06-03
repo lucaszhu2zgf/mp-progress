@@ -32,6 +32,7 @@ class MpProgress {
                 barStyle,
                 target
             };
+            this._barIndex = 0;
         } else {
             throw '[初始化失败]: 缺少canvasId';
         }
@@ -47,10 +48,12 @@ class MpProgress {
             console.warn('[绘图过程出现错误]: 调用draw方法必须传入百分比参数');
             return;
         }
+
         if (percentage < 0) {
             percentage = 0;
             console.warn('[参数percentagegit<0]: 已自动调整为0');
         }
+
         if (percentage > 100) {
             percentage = 100;
             console.warn('[参数percentage>100]: 已自动调整为100');
@@ -67,6 +70,7 @@ class MpProgress {
             }).exec((res) => {
                 console.log(res)
                 const canvas = res[0].node;
+                this._requestAnimationFrame = canvas.requestAnimationFrame;
                 const ctx = canvas.getContext('2d');
                 const dpr = wx.getSystemInfoSync().pixelRatio;
                 canvas.width = res[0].width * dpr;
@@ -137,31 +141,58 @@ class MpProgress {
                 this._r = this.convertLength(_r);
 
                 // 需要旋转的角度
-                const deg = ((this._options.percentage / 100).toFixed(2)) * 2 * Math.PI;
-                for (let i = 0, len = barStyle.length; i < barStyle.length; i++) {
+                this.deg = ((this._options.percentage / 100).toFixed(2)) * 2 * Math.PI;
+                for (let i = 0; i < barStyle.length; i++) {
                     ((i) => {
-                        const bar = barStyle[i];
-                        this._context.beginPath();
-                        this._context.arc(0, 0, this._r, 0, (i === len - 1 ? deg : 2 * Math.PI) * this._percent / 100);
-                        this._context.lineWidth = this.convertLength(bar.width);
-                        this._context.strokeStyle = this.generateBarFillStyle(bar.fillStyle);
-                        const barLineCap = bar.lineCap;
-                        if (barLineCap) {
-                            this._context.lineCap = barLineCap;
-                        }
-                        this._context.stroke();
+                        this._barIndex = i;
+                        this.drawBar();
                     })(i);
+                }
+                if (this.hasAnimateBar) {
+                    console.warn('animate和dotStyle不可同时使用');
+                } else {
+                    if (this._options.needDot) {
+                        this.drawBarCoordinateDot();
+                    }
                 }
             } else {
                 console.warn('参数barStyle不符合要求，请检查');
-                return;
-            }
-
-            if (this._options.needDot) {
-                this.drawBarCoordinateDot();
             }
         } catch (err) {
             console.warn('[绘图过程出现错误]: ', err);
+        }
+    }
+    drawBar(){
+        let currentBar = this._options.barStyle[this._barIndex];
+        const isLastBar = (this._options.barStyle.length - 1) === this._barIndex;
+        const barDeg = (isLastBar ? this.deg : 2 * Math.PI) * this._percent / 100;
+        const diff = 2;
+
+        let startAngle = 0;
+        let endAngle = barDeg;
+        if (isLastBar && currentBar.animate) {
+            this.hasAnimateBar = true;
+            if (currentBar.percent) {
+                currentBar.percent += diff;
+            } else {
+                currentBar.percent = diff;
+            }
+            startAngle = barDeg*((currentBar.percent - diff)/100);
+            endAngle = barDeg*((currentBar.percent)/100);
+        }
+        this._context.beginPath();
+        this._context.arc(0, 0, this._r, startAngle, endAngle);
+        this._context.lineWidth = this.convertLength(currentBar.width);
+        this._context.strokeStyle = this.generateBarFillStyle(currentBar.fillStyle);
+        const barLineCap = currentBar.lineCap;
+        if (barLineCap) {
+            this._context.lineCap = barLineCap;
+        }
+        this._context.stroke();
+        if (isLastBar && currentBar.animate) {
+            if (currentBar.percent < 100) {
+                this._requestAnimationFrame(this.drawBar.bind(this));
+            }
         }
     }
     compareVersion(v1, v2) {
