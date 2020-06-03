@@ -1,4 +1,4 @@
-/*! mp-progress.js v1.2.2 https://www.npmjs.com/package/mp-progress */
+/*! mp-progress.js v1.2.1 https://www.npmjs.com/package/mp-progress */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -107,6 +107,8 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -154,6 +156,7 @@ var MpProgress = /*#__PURE__*/function () {
         target: target
       };
       this._barIndex = 0;
+      this.isInit = false;
     } else {
       throw '[初始化失败]: 缺少canvasId';
     }
@@ -216,91 +219,105 @@ var MpProgress = /*#__PURE__*/function () {
       var _this2 = this;
 
       try {
-        var barStyle = this._options.barStyle;
+        var _ret = function () {
+          var barStyle = _this2._options.barStyle;
 
-        if (barStyle.length > 0) {
-          // 找到最大宽度的bar
-          var maxBarWidth = 0;
+          if (barStyle.length > 0) {
+            if (!_this2.isInit) {
+              // 找到最大宽度的bar
+              var maxBarWidth = 0;
 
-          for (var j = 0; j < barStyle.length; j++) {
-            var _width = barStyle[j].width;
+              for (var j = 0; j < barStyle.length; j++) {
+                var _width = barStyle[j].width;
 
-            if (_width > maxBarWidth) {
-              maxBarWidth = _width;
-            }
-          } // 取canvas的height计算圆圈半径取
-
-
-          var _r = 0;
-          var cosP = Math.cos(2 * Math.PI / 360 * ((100 - this._percent) / 2 / 100 * 360));
-
-          if (this._percent === 100) {
-            _r = ((Math.min(this._options.canvasSize.width, this._options.canvasSize.height) - 2 * maxBarWidth) / 2).toFixed(2);
-          } else {
-            _r = (Math.min(this._options.canvasSize.width / 2, (this._options.canvasSize.height - 2 * maxBarWidth) / (1 + cosP)) - maxBarWidth).toFixed(2);
-          } // 更换原点
+                if (_width > maxBarWidth) {
+                  maxBarWidth = _width;
+                }
+              } // 取canvas的height计算圆圈半径取
 
 
-          var originX = Math.round(this._options.canvasSize.width / 2);
-          var originY = 0;
+              var _r = 0;
+              var cosP = Math.cos(2 * Math.PI / 360 * ((100 - _this2._percent) / 2 / 100 * 360));
 
-          if (this._percent === 100) {
-            originY = Math.round(this._options.canvasSize.height / 2);
-          } else {
-            originY = Math.round(this._options.canvasSize.height / (1 + cosP));
-          }
+              if (_this2._percent === 100) {
+                _r = ((Math.min(_this2._options.canvasSize.width, _this2._options.canvasSize.height) - 2 * maxBarWidth) / 2).toFixed(2);
+              } else {
+                _r = (Math.min(_this2._options.canvasSize.width / 2, (_this2._options.canvasSize.height - 2 * maxBarWidth) / (1 + cosP)) - maxBarWidth).toFixed(2);
+              } // 更换原点
 
-          if (this._options.needDot) {
-            // 考虑剔除进度点的宽度差以及进度点阴影的宽度查
-            if (this._options.dotStyle.length > 0) {
-              var circleR = this._options.dotStyle[0].r;
 
-              if (circleR > maxBarWidth) {
-                var diff = circleR - maxBarWidth + (this._options.dotStyle[0].shadow ? circleR / 2 : 0);
-                _r -= diff;
+              var originX = Math.round(_this2._options.canvasSize.width / 2);
+              var originY = 0;
 
-                if (this._percent !== 100) {
-                  originY -= diff;
+              if (_this2._percent === 100) {
+                originY = Math.round(_this2._options.canvasSize.height / 2);
+              } else {
+                originY = Math.round(_this2._options.canvasSize.height / (1 + cosP));
+              } // 基础数据初始化完成
+
+
+              _this2.isInit = true;
+
+              if (_this2._options.needDot) {
+                // 考虑剔除进度点的宽度差以及进度点阴影的宽度查
+                if (_this2._options.dotStyle.length > 0) {
+                  var circleR = _this2._options.dotStyle[0].r;
+
+                  if (circleR > maxBarWidth) {
+                    var diff = circleR - maxBarWidth + (_this2._options.dotStyle[0].shadow ? circleR / 2 : 0);
+                    _r -= diff;
+
+                    if (_this2._percent !== 100) {
+                      originY -= diff;
+                    }
+                  }
+                } else {
+                  console.warn('参数dotStyle不完整，请检查');
+                  return {
+                    v: void 0
+                  };
                 }
               }
+
+              console.log(originX, originY);
+
+              _this2._context.translate(_this2.convertLength(originX), _this2.convertLength(originY)); // arc原点默认为3点钟方向，需要调整到12点
+
+
+              var rotateDeg = _this2._percent === 100 ? -90 : ((100 - _this2._percent + (_this2._percent - 50) / 2) / 100).toFixed(2) * 360;
+
+              _this2._context.rotate(rotateDeg * Math.PI / 180);
+
+              console.log('_r', _r);
+              _this2._r = _this2.convertLength(_r);
+            } // 需要旋转的角度
+
+
+            _this2.deg = (_this2._options.percentage / 100).toFixed(2) * 2 * Math.PI;
+
+            for (var i = 0; i < barStyle.length; i++) {
+              (function (i) {
+                // 重置percent以免出现计算数据不归为的问题
+                barStyle[i].percent = 0;
+                _this2._barIndex = i;
+
+                _this2.drawBar();
+              })(i);
+            }
+
+            if (_this2.hasAnimateBar) {
+              console.warn('animate和dotStyle不可同时使用');
             } else {
-              console.warn('参数dotStyle不完整，请检查');
-              return;
+              if (_this2._options.needDot) {
+                _this2.drawBarCoordinateDot();
+              }
             }
-          }
-
-          console.log(originX, originY);
-
-          this._context.translate(this.convertLength(originX), this.convertLength(originY)); // arc原点默认为3点钟方向，需要调整到12点
-
-
-          var rotateDeg = this._percent === 100 ? -90 : ((100 - this._percent + (this._percent - 50) / 2) / 100).toFixed(2) * 360;
-
-          this._context.rotate(rotateDeg * Math.PI / 180);
-
-          console.log('_r', _r);
-          this._r = this.convertLength(_r); // 需要旋转的角度
-
-          this.deg = (this._options.percentage / 100).toFixed(2) * 2 * Math.PI;
-
-          for (var i = 0; i < barStyle.length; i++) {
-            (function (i) {
-              _this2._barIndex = i;
-
-              _this2.drawBar();
-            })(i);
-          }
-
-          if (this.hasAnimateBar) {
-            console.warn('animate和dotStyle不可同时使用');
           } else {
-            if (this._options.needDot) {
-              this.drawBarCoordinateDot();
-            }
+            console.warn('参数barStyle不符合要求，请检查');
           }
-        } else {
-          console.warn('参数barStyle不符合要求，请检查');
-        }
+        }();
+
+        if (_typeof(_ret) === "object") return _ret.v;
       } catch (err) {
         console.warn('[绘图过程出现错误]: ', err);
       }
@@ -315,7 +332,7 @@ var MpProgress = /*#__PURE__*/function () {
       var startAngle = 0;
       var endAngle = barDeg;
 
-      if (isLastBar && currentBar.animate) {
+      if (isLastBar && currentBar.animate && currentBar.percent < 100) {
         this.hasAnimateBar = true;
 
         if (currentBar.percent) {

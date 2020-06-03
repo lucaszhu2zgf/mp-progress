@@ -33,6 +33,7 @@ class MpProgress {
                 target
             };
             this._barIndex = 0;
+            this.isInit = false;
         } else {
             throw '[初始化失败]: 缺少canvasId';
         }
@@ -88,62 +89,69 @@ class MpProgress {
                 barStyle
             } = this._options;
             if (barStyle.length > 0) {
-                // 找到最大宽度的bar
-                let maxBarWidth = 0;
-                for (let j = 0; j < barStyle.length; j++) {
-                    const _width = barStyle[j].width;
-                    if (_width > maxBarWidth) {
-                        maxBarWidth = _width;
-                    }
-                }
-                // 取canvas的height计算圆圈半径取
-                let _r = 0;
-                const cosP = Math.cos(2 * Math.PI / 360 * ((100 - this._percent) / 2 / 100 * 360));
-                if (this._percent === 100) {
-                    _r = ((Math.min(this._options.canvasSize.width, this._options.canvasSize.height) - 2 * maxBarWidth) / 2).toFixed(2);
-                } else {
-                    _r = (Math.min(this._options.canvasSize.width / 2, (this._options.canvasSize.height - 2 * maxBarWidth) / (1 + cosP)) - maxBarWidth).toFixed(2);
-                }
-
-                // 更换原点
-                const originX = Math.round(this._options.canvasSize.width / 2);
-                let originY = 0;
-                if (this._percent === 100) {
-                    originY = Math.round(this._options.canvasSize.height / 2);
-                } else {
-                    originY = Math.round(this._options.canvasSize.height / (1 + cosP));
-                }
-
-                if (this._options.needDot) {
-                    // 考虑剔除进度点的宽度差以及进度点阴影的宽度查
-                    if (this._options.dotStyle.length > 0) {
-                        const circleR = this._options.dotStyle[0].r;
-                        if (circleR > maxBarWidth) {
-                            const diff = circleR - maxBarWidth + (this._options.dotStyle[0].shadow ? circleR / 2 : 0);
-                            _r -= diff;
-                            if (this._percent !== 100) {
-                                originY -= diff;
-                            }
+                if (!this.isInit) {
+                    // 找到最大宽度的bar
+                    let maxBarWidth = 0;
+                    for (let j = 0; j < barStyle.length; j++) {
+                        const _width = barStyle[j].width;
+                        if (_width > maxBarWidth) {
+                            maxBarWidth = _width;
                         }
-                    } else {
-                        console.warn('参数dotStyle不完整，请检查');
-                        return;
                     }
+                    // 取canvas的height计算圆圈半径取
+                    let _r = 0;
+                    const cosP = Math.cos(2 * Math.PI / 360 * ((100 - this._percent) / 2 / 100 * 360));
+                    if (this._percent === 100) {
+                        _r = ((Math.min(this._options.canvasSize.width, this._options.canvasSize.height) - 2 * maxBarWidth) / 2).toFixed(2);
+                    } else {
+                        _r = (Math.min(this._options.canvasSize.width / 2, (this._options.canvasSize.height - 2 * maxBarWidth) / (1 + cosP)) - maxBarWidth).toFixed(2);
+                    }
+
+                    // 更换原点
+                    const originX = Math.round(this._options.canvasSize.width / 2);
+                    let originY = 0;
+                    if (this._percent === 100) {
+                        originY = Math.round(this._options.canvasSize.height / 2);
+                    } else {
+                        originY = Math.round(this._options.canvasSize.height / (1 + cosP));
+                    }
+
+                    // 基础数据初始化完成
+                    this.isInit = true;
+
+                    if (this._options.needDot) {
+                        // 考虑剔除进度点的宽度差以及进度点阴影的宽度查
+                        if (this._options.dotStyle.length > 0) {
+                            const circleR = this._options.dotStyle[0].r;
+                            if (circleR > maxBarWidth) {
+                                const diff = circleR - maxBarWidth + (this._options.dotStyle[0].shadow ? circleR / 2 : 0);
+                                _r -= diff;
+                                if (this._percent !== 100) {
+                                    originY -= diff;
+                                }
+                            }
+                        } else {
+                            console.warn('参数dotStyle不完整，请检查');
+                            return;
+                        }
+                    }
+
+                    console.log(originX, originY);
+                    this._context.translate(this.convertLength(originX), this.convertLength(originY));
+                    // arc原点默认为3点钟方向，需要调整到12点
+                    const rotateDeg = this._percent === 100 ? -90 : (((100 - this._percent) + (this._percent - 50) / 2) / 100).toFixed(2) * 360;
+                    this._context.rotate(rotateDeg * Math.PI / 180);
+
+                    console.log('_r', _r)
+                    this._r = this.convertLength(_r);
                 }
-
-                console.log(originX, originY);
-                this._context.translate(this.convertLength(originX), this.convertLength(originY));
-                // arc原点默认为3点钟方向，需要调整到12点
-                const rotateDeg = this._percent === 100 ? -90 : (((100 - this._percent) + (this._percent - 50) / 2) / 100).toFixed(2) * 360;
-                this._context.rotate(rotateDeg * Math.PI / 180);
-
-                console.log('_r', _r)
-                this._r = this.convertLength(_r);
 
                 // 需要旋转的角度
                 this.deg = ((this._options.percentage / 100).toFixed(2)) * 2 * Math.PI;
                 for (let i = 0; i < barStyle.length; i++) {
                     ((i) => {
+                        // 重置percent以免出现计算数据不归为的问题
+                        barStyle[i].percent = 0;
                         this._barIndex = i;
                         this.drawBar();
                     })(i);
@@ -170,7 +178,7 @@ class MpProgress {
 
         let startAngle = 0;
         let endAngle = barDeg;
-        if (isLastBar && currentBar.animate) {
+        if (isLastBar && currentBar.animate && currentBar.percent < 100) {
             this.hasAnimateBar = true;
             if (currentBar.percent) {
                 currentBar.percent += diff;

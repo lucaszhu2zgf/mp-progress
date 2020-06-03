@@ -1,8 +1,8 @@
 {
     "name": "mp-progress",
-    "version": "1.2.2",
+    "version": "1.2.1",
     "description": "circle progress for wechat miniprogram",
-    "main": "dist/progress.min.js",
+    "main": "src/index.js",
     "scripts": {
         "debug": "webpack",
         "watch": "webpack --watch",
