@@ -71,7 +71,7 @@ class MpProgress {
             }).exec((res) => {
                 console.log(res)
                 const canvas = res[0].node;
-                this._requestAnimationFrame = canvas.requestAnimationFrame;
+                this._requestAnimationFrame = canvas.requestAnimationFrame.bind(canvas);
                 const ctx = canvas.getContext('2d');
                 const dpr = wx.getSystemInfoSync().pixelRatio;
                 canvas.width = res[0].width * dpr;
