@@ -1,4 +1,4 @@
-/*! mp-progress.js v1.2.5 https://www.npmjs.com/package/mp-progress */
+/*! mp-progress.js v1.2.6 https://www.npmjs.com/package/mp-progress */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -201,7 +201,7 @@ var MpProgress = /*#__PURE__*/function () {
         }).exec(function (res) {
           console.log(res);
           var canvas = res[0].node;
-          _this._requestAnimationFrame = canvas.requestAnimationFrame;
+          _this._requestAnimationFrame = canvas.requestAnimationFrame.bind(canvas);
           var ctx = canvas.getContext('2d');
           var dpr = wx.getSystemInfoSync().pixelRatio;
           canvas.width = res[0].width * dpr;
