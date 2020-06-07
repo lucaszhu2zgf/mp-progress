@@ -135,11 +135,11 @@ class MpProgress {
                         // 考虑剔除进度点的宽度差以及进度点阴影的宽度查
                         if (this._options.dotStyle.length > 0) {
                             const circleR = this._options.dotStyle[0].r;
-                            if (circleR > maxBarWidth) {
-                                const diff = circleR - maxBarWidth + (this._options.dotStyle[0].shadow ? circleR / 2 : 0);
-                                _r -= diff;
+                            if (circleR*2 > maxBarWidth) {
+                                const shadowDiff = this._options.dotStyle[0].shadow ? circleR / 4 : 0;
+                                _r -= circleR - maxBarWidth + shadowDiff;
                                 if (this._percent !== 100) {
-                                    originY -= diff;
+                                    originY -= circleR + shadowDiff;
                                 }
                             }
                         } else {
