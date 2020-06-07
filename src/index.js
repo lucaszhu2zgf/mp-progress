@@ -89,7 +89,19 @@ class MpProgress {
                 barStyle
             } = this._options;
             if (barStyle.length > 0) {
-                if (!this.isInit) {
+                if (this.isInit) {
+                    console.log(this._positionInfo)
+                    // 需要清除画布
+                    if (this._percent === 100) {
+                        this._context.clearRect(-this._positionInfo.originX, -this._positionInfo.originY, this.convertLength(this._options.canvasSize.width), this.convertLength(this._options.canvasSize.height));
+                    } else {
+                        this._context.clearRect(-this._positionInfo.originX, -this.convertLength(this._options.canvasSize.height)/2, this.convertLength(this._options.canvasSize.width), this.convertLength(this._options.canvasSize.height));
+                    }
+                    // 重置shadow相关的参数，否则进度条会变粗
+                    this._context.shadowColor = 'transparent';
+                    this._context.shadowBlur = 0;
+                }else{
+                    console.log('init');
                     // 找到最大宽度的bar
                     let maxBarWidth = 0;
                     for (let j = 0; j < barStyle.length; j++) {
@@ -136,10 +148,13 @@ class MpProgress {
                         }
                     }
 
-                    console.log(originX, originY);
-                    this._context.translate(this.convertLength(originX), this.convertLength(originY));
+                    console.log(originX, originY, this.convertLength(originX), this.convertLength(originY));
                     // arc原点默认为3点钟方向，需要调整到12点
                     const rotateDeg = this._percent === 100 ? -90 : (((100 - this._percent) + (this._percent - 50) / 2) / 100).toFixed(2) * 360;
+
+                    this._positionInfo = {originX: this.convertLength(originX), originY: this.convertLength(originY)};
+
+                    this._context.translate(this._positionInfo.originX, this._positionInfo.originY);
                     this._context.rotate(rotateDeg * Math.PI / 180);
 
                     console.log('_r', _r)
@@ -148,14 +163,14 @@ class MpProgress {
 
                 // 需要旋转的角度
                 this.deg = ((this._options.percentage / 100).toFixed(2)) * 2 * Math.PI;
-                for (let i = 0; i < barStyle.length; i++) {
-                    ((i) => {
-                        // 重置percent以免出现计算数据不归为的问题
-                        barStyle[i].percent = 0;
-                        this._barIndex = i;
-                        this.drawBar();
-                    })(i);
-                }
+
+                (barStyle || []).forEach((item, index) => {
+                    // 重置percent以免出现计算数据不归为的问题
+                    item.percent = 0;
+                    this._barIndex = index;
+                    this.drawBar();
+                });
+
                 if (this.hasAnimateBar) {
                     console.warn('animate和dotStyle不可同时使用');
                 } else {
@@ -188,6 +203,7 @@ class MpProgress {
             startAngle = barDeg*((currentBar.percent - diff)/100);
             endAngle = barDeg*((currentBar.percent)/100);
         }
+        console.log(`startAngle: ${startAngle}, endAngle: ${endAngle}`);
         this._context.beginPath();
         this._context.arc(0, 0, this._r, startAngle, endAngle);
         this._context.lineWidth = this.convertLength(currentBar.width);
@@ -207,25 +223,25 @@ class MpProgress {
         v1 = v1.split('.');
         v2 = v2.split('.');
         const len = Math.max(v1.length, v2.length);
-      
+
         while (v1.length < len) {
           v1.push('0');
         }
         while (v2.length < len) {
           v2.push('0');
         }
-      
+
         for (let i = 0; i < len; i++) {
           const num1 = parseInt(v1[i]);
           const num2 = parseInt(v2[i]);
-      
+
           if (num1 > num2) {
             return 1;
           } else if (num1 < num2) {
             return -1;
           }
         }
-      
+
         return 0;
     }
     /**
