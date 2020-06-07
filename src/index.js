@@ -191,7 +191,7 @@ class MpProgress {
         const barDeg = (isLastBar ? this.deg : 2 * Math.PI) * this._percent / 100;
         const diff = 2;
 
-        let startAngle = 0;
+        // let startAngle = 0;
         let endAngle = barDeg;
         if (isLastBar && currentBar.animate && currentBar.percent < 100) {
             this.hasAnimateBar = true;
@@ -200,12 +200,13 @@ class MpProgress {
             } else {
                 currentBar.percent = diff;
             }
-            startAngle = barDeg*((currentBar.percent - diff)/100);
+            // startAngle = barDeg*((currentBar.percent - diff)/100);
             endAngle = barDeg*((currentBar.percent)/100);
         }
-        console.log(`startAngle: ${startAngle}, endAngle: ${endAngle}`);
+        // console.log(`startAngle: ${startAngle}, endAngle: ${endAngle}`);
+        console.log(`endAngle: ${endAngle}`);
         this._context.beginPath();
-        this._context.arc(0, 0, this._r, startAngle, endAngle);
+        this._context.arc(0, 0, this._r, 0, endAngle);
         this._context.lineWidth = this.convertLength(currentBar.width);
         this._context.strokeStyle = this.generateBarFillStyle(currentBar.fillStyle);
         const barLineCap = currentBar.lineCap;
