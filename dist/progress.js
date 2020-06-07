@@ -273,12 +273,12 @@ var MpProgress = /*#__PURE__*/function () {
               if (this._options.dotStyle.length > 0) {
                 var circleR = this._options.dotStyle[0].r;
 
-                if (circleR > maxBarWidth) {
-                  var diff = circleR - maxBarWidth + (this._options.dotStyle[0].shadow ? circleR / 2 : 0);
-                  _r -= diff;
+                if (circleR * 2 > maxBarWidth) {
+                  var shadowDiff = this._options.dotStyle[0].shadow ? circleR / 4 : 0;
+                  _r -= circleR - maxBarWidth + shadowDiff;
 
                   if (this._percent !== 100) {
-                    originY -= diff;
+                    originY -= circleR + shadowDiff;
                   }
                 }
               } else {
