@@ -1,0 +1,1 @@
+<canvas class="mp-progress" type="2d" id="{{canvasId}}" style="width: {{customOptions.canvasSize.width}}rpx; height: {{customOptions.canvasSize.height}}rpx"></canvas>
