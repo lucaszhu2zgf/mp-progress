@@ -11,7 +11,36 @@
 $ npm install mp-progress --save
 ```
 
-## 用法
+## 组件方式的调用（简单易用）
+在对应页面引入组件，初始化data并在wxml中使用组件
+```
+{
+  "navigationBarTitleText": "首页",
+  "usingComponents": {
+    "mpProgress": "mp-progress/dist/component/mp-progress"
+  }
+}
+...
+// 参数使用方式相同，canvasSize默认是400*400
+data = {
+  config: {
+    canvasSize: {
+      width: 400,
+      height: 400
+    },
+    percent: 100,
+    barStyle: [{width: 20, fillStyle: '#f0f0f0'}, {width: 20, animate: true, fillStyle: [{position: 0, color: '#56B37F'}, {position: 1, color: '#c0e674'}]}],
+    needDot: true,
+    dotStyle: [{r: 20, fillStyle: '#ffffff', shadow: 'rgba(0,0,0,.15)'}, {r: 10, fillStyle: '#56B37F'}]
+  },
+  percentage: 0
+}
+...
+<mpProgress config="{{config}}" percentage="{{percentage}}"></mpProgress>
+```
+该方式遵从双向绑定数据的原则，当页面改变percentage，mp-progress会自动更新视图
+
+## API方式调用（适合需要在mp-progress上层构建新组件的需求）
 
 传入的单位是`rpx`，即如果canvas宽度为400rpx，则传入400，后续会自动计算真实尺寸
 ```
