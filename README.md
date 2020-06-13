@@ -17,11 +17,10 @@ $ npm install mp-progress --save
 {
   "navigationBarTitleText": "首页",
   "usingComponents": {
-    "mpProgress": "{path}/node_modules/mp-progress/dist/component/mp-progress"
+    "mpProgress": "mp-progress/dist/component/mp-progress"
   }
 }
-// {path}需要根据实际情况替换
-
+...
 // 参数使用方式相同，canvasSize默认是400*400
 data = {
   config: {
