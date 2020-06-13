@@ -4,3 +4,4 @@ webpack.config.js
 dist/progress.js
 .vscode
 .babelrc
+.github
