@@ -1,4 +1,4 @@
-/*! mp-progress.js v1.2.9 https://www.npmjs.com/package/mp-progress */
+/*! mp-progress.js v1.2.10 https://www.npmjs.com/package/mp-progress */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
