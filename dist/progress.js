@@ -193,22 +193,31 @@ var MpProgress = /*#__PURE__*/function () {
         // context初始化完毕
         this.drawFn();
       } else {
-        wx.createSelectorQuery()["in"](this._options.target).select("#".concat(this._options.canvasId)).fields({
-          node: true,
-          size: true
-        }).exec(function (res) {
-          console.log(res);
-          var canvas = res[0].node;
-          _this._requestAnimationFrame = canvas.requestAnimationFrame.bind(canvas);
-          var ctx = canvas.getContext('2d');
-          var dpr = wx.getSystemInfoSync().pixelRatio;
-          canvas.width = res[0].width * dpr;
-          canvas.height = res[0].height * dpr;
-          ctx.scale(dpr, dpr);
-          _this._context = ctx;
+        try {
+          console.log(3);
+          var _target = this._options.target;
+          var query = wx.createSelectorQuery()["in"](_target); // if (_target.$wx && _target.$wx.$wepy) {
+          //     // wepy不支持in的方式去查找
+          //     query = wx.createSelectorQuery();
+          // }
 
-          _this.drawFn();
-        });
+          console.log(_target);
+          query.select("#".concat(this._options.canvasId)).node(function (res) {
+            console.log(res);
+            var canvas = res.node;
+            _this._requestAnimationFrame = canvas.requestAnimationFrame.bind(canvas);
+            var ctx = canvas.getContext('2d');
+            var dpr = wx.getSystemInfoSync().pixelRatio;
+            canvas.width = canvas._width * dpr;
+            canvas.height = canvas._height * dpr;
+            ctx.scale(dpr, dpr);
+            _this._context = ctx;
+
+            _this.drawFn();
+          }).exec();
+        } catch (err) {
+          console.warn(err);
+        }
       }
     }
   }, {

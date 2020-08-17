@@ -11,8 +11,16 @@
 $ npm install mp-progress --save
 ```
 
+## 基础库要求
+
+支持 2.7.0 及以上的基础库版本
+
+
 ## 组件方式的调用（简单易用）
+
 在对应页面引入组件，初始化data并在wxml中使用组件
+
+`由于组件实现差异，该方式在wepy中不适用`
 ```
 {
   "navigationBarTitleText": "首页",
@@ -33,7 +41,7 @@ data = {
     needDot: true,
     dotStyle: [{r: 20, fillStyle: '#ffffff', shadow: 'rgba(0,0,0,.15)'}, {r: 10, fillStyle: '#56B37F'}]
   },
-  percentage: 0
+  percentage: 10
 }
 ...
 <mpProgress config="{{config}}" percentage="{{percentage}}"></mpProgress>
@@ -42,11 +50,14 @@ data = {
 
 ## API方式调用（适合需要在mp-progress上层构建新组件的需求）
 
+`该方式适用于wepy，但必须在onReady回调函数里面进行初始化`
+
 传入的单位是`rpx`，即如果canvas宽度为400rpx，则传入400，后续会自动计算真实尺寸
 ```
 import MpProgress from 'mp-progress';
 ...
 // 初始化
+// 注意：在wepy中必须在onReady里调用
 const mprogress = new MpProgress({
   target: this,
   canvasId: 'progress',

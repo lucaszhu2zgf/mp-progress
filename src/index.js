@@ -65,22 +65,32 @@ class MpProgress {
             // context初始化完毕
             this.drawFn();
         } else {
-            wx.createSelectorQuery().in(this._options.target).select(`#${this._options.canvasId}`).fields({
-                node: true,
-                size: true
-            }).exec((res) => {
-                console.log(res)
-                const canvas = res[0].node;
-                this._requestAnimationFrame = canvas.requestAnimationFrame.bind(canvas);
-                const ctx = canvas.getContext('2d');
-                const dpr = wx.getSystemInfoSync().pixelRatio;
-                canvas.width = res[0].width * dpr;
-                canvas.height = res[0].height * dpr;
-                ctx.scale(dpr, dpr);
-                this._context = ctx;
+            try {
+                const _target = this._options.target;
 
-                this.drawFn();
-            });
+                let query = wx.createSelectorQuery().in(_target);
+                if (_target.$wx && _target.$wx.$wepy) {
+                    // wepy不支持in的方式去查找
+                    query = wx.createSelectorQuery();
+                }
+                query
+                    .select(`#${this._options.canvasId}`)
+                    .node((res) => {
+                        console.log(res)
+                        const canvas = res.node;
+                        this._requestAnimationFrame = canvas.requestAnimationFrame.bind(canvas);
+                        const ctx = canvas.getContext('2d');
+                        const dpr = wx.getSystemInfoSync().pixelRatio;
+                        canvas.width = canvas._width * dpr;
+                        canvas.height = canvas._height * dpr;
+                        ctx.scale(dpr, dpr);
+                        this._context = ctx;
+
+                        this.drawFn();
+                    }).exec();
+            } catch (err) {
+                console.warn(err);
+            }
         }
     }
     drawFn(){
