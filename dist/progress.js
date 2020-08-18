@@ -1,4 +1,4 @@
-/*! mp-progress.js v1.2.10 https://www.npmjs.com/package/mp-progress */
+/*! mp-progress.js v1.2.11 https://www.npmjs.com/package/mp-progress */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -194,14 +194,14 @@ var MpProgress = /*#__PURE__*/function () {
         this.drawFn();
       } else {
         try {
-          console.log(3);
           var _target = this._options.target;
-          var query = wx.createSelectorQuery()["in"](_target); // if (_target.$wx && _target.$wx.$wepy) {
-          //     // wepy不支持in的方式去查找
-          //     query = wx.createSelectorQuery();
-          // }
+          var query = wx.createSelectorQuery()["in"](_target);
 
-          console.log(_target);
+          if (_target.$wx && _target.$wx.$wepy) {
+            // wepy不支持in的方式去查找
+            query = wx.createSelectorQuery();
+          }
+
           query.select("#".concat(this._options.canvasId)).node(function (res) {
             console.log(res);
             var canvas = res.node;

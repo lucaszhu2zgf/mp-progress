@@ -67,7 +67,6 @@ class MpProgress {
         } else {
             try {
                 const _target = this._options.target;
-
                 let query = wx.createSelectorQuery().in(_target);
                 if (_target.$wx && _target.$wx.$wepy) {
                     // wepy不支持in的方式去查找
