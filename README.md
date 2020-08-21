@@ -76,8 +76,8 @@ mprogress.draw(60);
 
 |效果|解析|
 |:----|:-----|
-|![正常模式](/assets/images/params.png)|正常模式（默认）|
-|![百分比模式](/assets/images/percent.png)|百分比模式（只需要按需求传入percent即可，相见参数说明）|
+|![正常模式](assets/images/params.png)|正常模式（默认）|
+|![百分比模式](assets/images/percent.png)|百分比模式（只需要按需求传入percent即可，相见参数说明）|
 
 ## 参数说明
 
@@ -115,3 +115,18 @@ mprogress.draw(60);
 - 进度动画
 
   目前动画只在barStyle最后一个元素的定义中起作用，每一帧的动画为总动画的2%
+
+- 文字展示效果
+
+  ![正常模式](assets/images/result.png)
+
+  实现代码可以参考：
+  ```
+  <view class="garage-status">
+    <canvas class="canvas" type="2d" id="progress"></canvas>
+    <view class="status-ctn">
+      <view class="status-count">127/127</view>
+      <view class="desc-text">适用车位剩余</view>
+    </view>
+  </view>
+  ```
