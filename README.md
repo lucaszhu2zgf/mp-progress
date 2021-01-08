@@ -15,6 +15,9 @@ $ npm install mp-progress --save
 
 根据文档要求，支持 2.7.0 及以上的基础库版本，使用最新基础库效果最佳
 
+## 微信原生小程序
+使用微信原生小程序的方式引入npm包需要有额外的配置，具体可以查看
+[https://developers.weixin.qq.com/community/develop/article/doc/0008aecec4c9601e750be048d51c13](https://developers.weixin.qq.com/community/develop/article/doc/0008aecec4c9601e750be048d51c13)
 
 ## 组件方式的调用（简单易用）
 
