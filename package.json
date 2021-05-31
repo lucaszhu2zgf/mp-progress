@@ -1,6 +1,6 @@
 {
     "name": "mp-progress",
-    "version": "1.2.12",
+    "version": "1.2.13",
     "description": "circle progress for wechat miniprogram",
     "main": "dist/progress.min.js",
     "miniprogram": "dist",
