@@ -1,1 +1,1 @@
-<canvas class="mp-progress" type="2d" id="{{canvasId}}" style="width: {{customOptions.canvasSize.width}}rpx; height: {{customOptions.canvasSize.height}}rpx"></canvas>
+<canvas class="mp-progress" type="2d" id="{{canvasId}}" wx:if="{{customOptions.canvasSize.width}}" style="width: {{customOptions.canvasSize.width}}rpx; height: {{customOptions.canvasSize.height}}rpx"></canvas>

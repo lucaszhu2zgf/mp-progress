@@ -1,4 +1,4 @@
-/*! mp-progress.js v1.2.12 https://www.npmjs.com/package/mp-progress */
+/*! mp-progress.js v1.2.13 https://www.npmjs.com/package/mp-progress */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -128,8 +128,8 @@ var MpProgress = /*#__PURE__*/function () {
     var canvasId = options.canvasId,
         _options$canvasSize = options.canvasSize,
         canvasSize = _options$canvasSize === void 0 ? {
-      width: 0,
-      height: 0
+      width: 400,
+      height: 400
     } : _options$canvasSize,
         _options$percent = options.percent,
         percent = _options$percent === void 0 ? 100 : _options$percent,
